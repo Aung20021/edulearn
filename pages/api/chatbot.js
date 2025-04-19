@@ -6,8 +6,6 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/pages/api/auth/[...nextauth]"; // Adjust path as needed
 import User from "@/models/User";
 
-let paginationOffset = 0;
-
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Only POST allowed" });

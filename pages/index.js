@@ -1,5 +1,5 @@
 import Spinner from "@/components/Spinner";
-import { useSession, signOut } from "next-auth/react";
+import { useSession, signIn, signOut } from "next-auth/react";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
