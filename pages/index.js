@@ -1,5 +1,5 @@
 import Spinner from "@/components/Spinner";
-import { useSession, signIn, signOut } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
@@ -17,21 +17,29 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [lastVisitedCourse, setLastVisitedCourse] = useState(null);
   const [lastVisitedLesson, setLastVisitedLesson] = useState(null);
+  const [userProfile, setUserProfile] = useState(null); // 👈 Add this state
   const { data: session, status } = useSession();
   const isLoadingSession = status === "loading";
   const router = useRouter();
 
   useEffect(() => {
     if (session?.user?.id) {
+      // Fetch user profile (name and image)
+      fetch(`/api/user?userId=${session.user.id}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data?.user) {
+            setUserProfile(data.user); // 👈 Set the user profile
+          }
+        })
+        .catch((err) => console.error("Error fetching user profile:", err));
+
       // Fetch last visited course and lesson
       fetch(`/api/update-last-visited?userId=${session.user.id}`)
         .then((res) => res.json())
         .then((data) => {
-          console.log("Fetched data:", data); // Debugging line
           setLastVisitedCourse(data.lastVisitedCourse);
           setLastVisitedLesson(data.lastVisitedLesson);
-
-          // Store the last visited course in sessionStorage for later use
           if (data.lastVisitedCourse) {
             sessionStorage.setItem(
               "lastVisitedCourse",
@@ -47,13 +55,9 @@ export default function Home() {
 
   const handleContinueLearning = () => {
     const lastVisitedCourseId = sessionStorage.getItem("lastVisitedCourse");
-    console.log("Last visited course ID:", lastVisitedCourseId); // Debugging line
-
     if (lastVisitedCourseId) {
-      // Redirect to the last visited course page
       router.push(`/courses/${lastVisitedCourseId}`);
     } else {
-      // Handle the case when there is no last visited course
       console.log("No last visited course found.");
     }
   };
@@ -83,10 +87,10 @@ export default function Home() {
             className="flex items-center gap-4"
           >
             <div className="w-16 h-16 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center text-2xl font-bold">
-              {session.user?.image ? (
+              {userProfile?.image ? (
                 <Image
                   className="rounded-full w-14 h-14"
-                  src={session.user.image}
+                  src={userProfile.image}
                   alt={session.user.email}
                   width={48}
                   height={48}
@@ -113,7 +117,7 @@ export default function Home() {
                 Welcome back 👋
               </h2>
               <p className="text-sm text-gray-500">
-                {session.user?.name || session.user?.email}
+                {userProfile?.name || session.user.email}
               </p>
             </div>
           </motion.div>

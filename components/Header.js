@@ -2,7 +2,7 @@ import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Header() {
   const router = useRouter();
@@ -10,6 +10,7 @@ export default function Header() {
   const { data: session } = useSession();
 
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+  const [userProfile, setUserProfile] = useState(null); // 👈 fetched from DB
 
   const toggleMobileNav = () => setIsMobileNavOpen(!isMobileNavOpen);
 
@@ -17,6 +18,19 @@ export default function Header() {
     "text-white bg-green-600 px-4 py-2 rounded-lg transition hover:bg-green-500 shadow-md";
   const inactive =
     "text-gray-500 transition hover:text-green-600 px-4 py-2 rounded-lg";
+
+  useEffect(() => {
+    if (session?.user?.id) {
+      fetch(`/api/user?userId=${session.user.id}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data?.user) {
+            setUserProfile(data.user); // 👈 Set fetched user data
+          }
+        })
+        .catch((err) => console.error("Error fetching user profile:", err));
+    }
+  }, [session]);
 
   if (session) {
     return (
@@ -69,7 +83,6 @@ export default function Header() {
             >
               Archived
             </Link>
-
             <Link
               className={pathname === "/settings" ? active : inactive}
               href="/settings"
@@ -80,13 +93,13 @@ export default function Header() {
 
           {/* Profile & Mobile Menu Button */}
           <div className="flex items-center space-x-4">
-            {/* User Profile */}
+            {/* Profile Image from DB */}
             <Link className="relative" href="/settings">
-              {session.user?.image ? (
+              {userProfile?.image ? (
                 <Image
                   className="w-10 h-10 rounded-full border border-gray-300"
-                  src={session.user.image}
-                  alt={session.user.email}
+                  src={userProfile.image}
+                  alt={userProfile.name || session.user.email}
                   width={40}
                   height={40}
                 />
@@ -95,20 +108,20 @@ export default function Header() {
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
-                  stroke-width="1.5"
+                  strokeWidth="1.5"
                   stroke="currentColor"
                   className="w-10 h-10 rounded-full border border-gray-300"
                 >
                   <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                     d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
                   />
                 </svg>
               )}
             </Link>
 
-            {/* Mobile Menu Button */}
+            {/* Mobile Nav Toggle */}
             <button
               onClick={toggleMobileNav}
               className="md:hidden p-2 rounded-lg bg-gray-200 hover:bg-gray-300 transition"
@@ -161,7 +174,7 @@ export default function Header() {
               </Link>
               <Link
                 onClick={toggleMobileNav}
-                className={pathname === "/products" ? active : inactive}
+                className={pathname === "/courses" ? active : inactive}
                 href="/courses"
               >
                 Courses
@@ -173,7 +186,6 @@ export default function Header() {
               >
                 Archived
               </Link>
-
               <Link
                 onClick={toggleMobileNav}
                 className={pathname === "/settings" ? active : inactive}
@@ -187,4 +199,6 @@ export default function Header() {
       </header>
     );
   }
+
+  return null;
 }
