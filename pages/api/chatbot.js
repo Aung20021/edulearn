@@ -3,7 +3,7 @@ import Course from "@/models/Course";
 import Lesson from "@/models/Lesson";
 import Quiz from "@/models/Quiz";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/pages/api/auth/[...nextauth]"; // Adjust path as needed
+// Adjust path as needed
 import User from "@/models/User";
 
 export default async function handler(req, res) {
@@ -11,7 +11,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Only POST allowed" });
   }
   // Get user session
-  const session = await getServerSession(req, res, authOptions);
+  const session = await getServerSession(req, res);
 
   if (!session) {
     return res.status(401).json({ error: "Unauthorized" });
@@ -119,12 +119,12 @@ export default async function handler(req, res) {
           "Great! Please provide the course title and category in this format:\n\nCourse: Your Title | Category: Your Category",
       });
     }
-    const session = await getServerSession(req, res, authOptions);
+    const session = await getServerSession(req, res);
     console.log("Session in chatbot API:", session);
 
     // Parse custom course creation format
     if (message.toLowerCase().startsWith("course:")) {
-      const session = await getServerSession(req, res, authOptions);
+      const session = await getServerSession(req, res);
       if (!session?.user?.email) {
         return res
           .status(401)
@@ -202,7 +202,7 @@ export default async function handler(req, res) {
       const lessonResponses = [];
 
       // Generate 3 Lessons
-      for (let i = 1; i <= 3; i++) {
+      for (let i = 1; i <= 1; i++) {
         const lessonTitlePrompt = `Generate a short, clear, and concise lesson title (max 8 words) for Lesson ${i} of the course titled "${title}". Only return the title. Do not include 'Lesson ${i}:' prefix or any explanation.`;
 
         const lessonContentPrompt = `Write a lesson content (max 150 words) for Lesson ${i} of the course "${title}".`;
@@ -261,7 +261,7 @@ export default async function handler(req, res) {
         newCourse.lessons.push(lesson._id);
 
         // Generate Quiz for Lesson
-        const quizPrompt = `Create 5 multiple-choice quizzes for the lesson titled "${lessonTitle}". 
+        const quizPrompt = `Create 1 multiple-choice quizzes for the lesson titled "${lessonTitle}". 
 Each quiz should be a valid JSON object with "question", "options" (array), and "correctAnswer" keys.
 Return an array of such JSON objects. Do not include any introductory sentences or explanations or markdown formatting.`;
 
@@ -409,7 +409,7 @@ Return an array of such JSON objects. Do not include any introductory sentences 
       await newCourse.save();
 
       return res.status(200).json({
-        reply: `✅ Course "${title}" created with 3 lessons and quizzes!\n\nLessons:\n${lessonResponses.join("\n")}`,
+        reply: `✅ Course "${title}" created with a sample lesson and quizzes!\n\nLessons:\n${lessonResponses.join("\n")}`,
       });
     }
 

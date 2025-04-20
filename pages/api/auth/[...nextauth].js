@@ -24,12 +24,6 @@ export default NextAuth({
     strategy: "jwt", // Explicitly defining JWT as session strategy
   },
   callbacks: {
-    async session({ session, token }) {
-      if (token?.id) {
-        session.user._id = token.id;
-      }
-      return session;
-    },
     async jwt({ token, user }) {
       if (user) {
         token.id = user._id;
@@ -68,17 +62,23 @@ export default NextAuth({
     },
 
     async session({ session, token }) {
-      // Ensure MongoDB connection
+      // Step 1: Attach token ID if available (from the first callback)
+      if (token?.id) {
+        session.user._id = token.id;
+      }
+
+      // Step 2: Ensure MongoDB connection
       await mongooseConnect();
 
-      // Fetch the user from the database
+      // Step 3: Fetch user from the database using email
       const user = await User.findOne({ email: session.user.email });
 
       if (user) {
-        session.user.id = user._id.toString(); // Attach user ID to session
-        session.user.role = user.role; // Attach role to session
+        session.user.id = user._id.toString(); // Add id from DB
+        session.user.role = user.role; // Add role from DB
       }
 
+      // Step 4: Return the updated session object
       return session;
     },
   },
