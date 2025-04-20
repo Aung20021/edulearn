@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation"; // Import useRouter
 import toast from "react-hot-toast";
+import Image from "next/image";
 
 export default function Course({ session }) {
   const router = useRouter(); // Initialize router
@@ -166,10 +167,11 @@ export default function Course({ session }) {
           {imagePreview && (
             <div className="mt-4">
               <p>Image Preview:</p>
-              <img
+              <Image
                 src={imagePreview}
                 alt="Image Preview"
-                className="w-full h-64 object-cover mt-2 border rounded"
+                fill
+                className="object-cover"
               />
             </div>
           )}
