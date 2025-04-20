@@ -111,6 +111,92 @@ export default async function handler(req, res) {
         });
       }
     }
+    // Extend your handler function inside the POST check block, before the AI fallback
+
+    // 5. MOST POPULAR COURSES
+    if (/\b(popular courses?|most enrolled)\b/.test(lowerMessage)) {
+      // pull in enrolledStudents so we can count
+      const allCourses = await Course.find({ isPublished: true })
+        .populate("enrolledStudents")
+        .lean();
+
+      const sorted = allCourses
+        .filter((c) => c.enrolledStudents.length > 0)
+        .sort((a, b) => b.enrolledStudents.length - a.enrolledStudents.length)
+        .slice(0, 3);
+
+      if (sorted.length === 0) {
+        return res.status(200).json({
+          reply:
+            "Currently, no courses have any enrolled students yet. Check back later for trending courses!",
+        });
+      }
+
+      // nicely formatted list
+      const list = sorted
+        .map(
+          (c, i) =>
+            `${i + 1}. ${c.title} — ${c.enrolledStudents.length} students`
+        )
+        .join("\n");
+
+      return res.status(200).json({
+        reply: `Here are the 3 most popular courses:\n\n${list}`,
+      });
+    }
+    // 1. FREE COURSES
+    if (/free course/.test(lowerMessage)) {
+      const freeCourses = await Course.find({
+        isPublished: true,
+        isPaid: false,
+      })
+        .sort({ createdAt: -1 })
+        .limit(3);
+
+      if (freeCourses.length === 0) {
+        return res
+          .status(200)
+          .json({ reply: "There are no free courses available right now." });
+      }
+
+      const reply = `Here are the latest free courses:\n\n${freeCourses
+        .map((c, i) => `${i + 1}. ${c.title}`)
+        .join("\n")}`;
+      return res.status(200).json({ reply });
+    }
+
+    // 2. PAID COURSES
+    if (/paid course/.test(lowerMessage)) {
+      const paidCourses = await Course.find({ isPublished: true, isPaid: true })
+        .sort({ createdAt: -1 })
+        .limit(3);
+
+      if (paidCourses.length === 0) {
+        return res
+          .status(200)
+          .json({ reply: "There are no paid courses available right now." });
+      }
+
+      const reply = `Here are the latest paid courses:\n\n${paidCourses
+        .map((c, i) => `${i + 1}. ${c.title}`)
+        .join("\n")}`;
+      return res.status(200).json({ reply });
+    }
+
+    // 4. LATEST COURSES
+    if (/latest course|newest course/.test(lowerMessage)) {
+      const latestCourses = await Course.find({ isPublished: true })
+        .sort({ createdAt: -1 })
+        .limit(3);
+
+      if (latestCourses.length === 0) {
+        return res.status(200).json({ reply: "No recent courses found." });
+      }
+
+      return res.status(200).json({
+        reply: `Here are the 3 latest courses:\n\n${latestCourses.map((c, i) => `${i + 1}. ${c.title}`).join("\n")}`,
+      });
+    }
     // Inside your API route handler...
     // /Createcourse COMMAND
     if (message.trim().toLowerCase().startsWith("/createcourse")) {
