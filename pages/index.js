@@ -189,15 +189,29 @@ export default function Home() {
             </p>
           </div>
 
-          {/* Sign Out */}
-          <motion.button
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-            onClick={() => signOut()}
-            className="w-full rounded-lg bg-red-600 hover:bg-red-700 text-white font-semibold py-2 transition"
-          >
-            Sign Out
-          </motion.button>
+          <div className="flex flex-col sm:flex-row gap-4 mt-6">
+            {/* Go to Student App */}
+            <motion.a
+              href="https://edulearn-student.vercel.app/"
+              target="_blank"
+              rel="noopener noreferrer"
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              className="w-full sm:w-auto text-center rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 transition"
+            >
+              Go to Student App
+            </motion.a>
+
+            {/* Sign Out */}
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={() => signOut()}
+              className="w-full sm:w-auto rounded-lg bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 transition"
+            >
+              Sign Out
+            </motion.button>
+          </div>
         </motion.section>
       </main>
     );
